@@ -9,6 +9,9 @@ import ProfileRoutes from "./src/Routes/profile.Routes.js";
 // Admin
 import AdminRoutes from "./src/Routes/admin.Routes.js";
 
+// Attendance
+import AttendanceRoutes from "./src/Routes/attendance.Routes.js";
+
 dotenv.config();
 
 const app = express();
@@ -21,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/profile", ProfileRoutes)
 app.use("/api/admin", AdminRoutes)
+app.use("/api/attendance", AttendanceRoutes)
 
 // IN case Fail Config db.js
 connectDB()
