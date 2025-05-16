@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 // Profile
 import ProfileRoutes from "./src/Routes/profile.Routes.js";
 
+// Admin
+import AdminRoutes from "./src/Routes/admin.Routes.js";
+
 dotenv.config();
 
 const app = express();
@@ -17,6 +20,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/profile", ProfileRoutes)
+app.use("/api/admin", AdminRoutes)
 
 // IN case Fail Config db.js
 connectDB()
