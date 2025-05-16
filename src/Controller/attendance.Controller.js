@@ -4,20 +4,20 @@ import mongoose from "mongoose";
 const createAttendance = async (req, res) => {
   try {
     const userId = req.user._id; 
-    const { date, in_time, out_time, break_time } = req.body;
+    const { date, in_time } = req.body;
     const attendance = await Attendance.create({
       user: userId,
       date,
       in_time,
-      out_time,
-      break_time,
+      // out_time,
+      // break_time,
     });
     res.status(201).json(attendance);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error while creating attendance" });
   }
-};
+}
 
 const getAllAttendance = async (req, res) => {
   try {
@@ -73,10 +73,10 @@ const updateAttendance = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
-    const { date, in_time, out_time, break_time } = req.body;
+    const { out_time, break_time } = req.body;
     const attendance = await Attendance.findOneAndUpdate(
       { _id: id, user: userId },
-      { date, in_time, out_time, break_time },
+      { out_time, break_time },
       { new: true }
     );
     if (!attendance) {
@@ -87,7 +87,38 @@ const updateAttendance = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Error updating attendance" });
   }
-};
+}
+
+const rangeOfDate = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { startDate, endDate } = req.body;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: "Start date and end date are required" });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (end < start) {
+      return res.status(400).json({ message: "End date cannot be before start date" });
+    }
+
+    const attendance = await Attendance.find({
+      user: userId,
+      date: {
+        $gte: start,
+        $lte: end
+      }
+    }).populate("user", "-password -__v -otp -status -updatedAt -city -position -state -work_place_name");
+
+    res.status(200).json(attendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching attendance for date range" });
+  }
+}
 
 const deleteAttendance = async (req, res) => {
   try {
@@ -112,6 +143,7 @@ export {
   getAllAttendance,
   getAttendanceById,
   updateAttendance,
+  rangeOfDate,
   deleteAttendance,
   getByDate
 };

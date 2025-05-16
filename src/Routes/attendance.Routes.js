@@ -5,7 +5,8 @@ import {
     getAttendanceById,
     updateAttendance,
     deleteAttendance,
-    getByDate
+    getByDate,
+    rangeOfDate
 } from '../Controller/attendance.Controller.js';
 import { protect } from '../Middleware/authMiddleware.js';
 
@@ -17,5 +18,6 @@ router.get("/getAttendanceById/:id", protect, getAttendanceById);
 router.put("/updateAttendance/:id", protect, updateAttendance);
 router.delete("/deleteAttendance/:id", protect, deleteAttendance);
 router.post("/getByDate", protect, getByDate);
+router.post("/dateRange", protect, rangeOfDate)
 
 export default router;

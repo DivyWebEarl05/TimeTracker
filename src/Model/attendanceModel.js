@@ -15,7 +15,7 @@ const attendanceSchema = new mongoose.Schema(
     },
 
     date: {
-      type: String,
+      type: Date,
       required: true,
     },
 
@@ -26,12 +26,10 @@ const attendanceSchema = new mongoose.Schema(
 
     out_time: {
       type: String,
-      required: true,
     },
 
     break_time: {
       type: String,
-      required: true,
     },
 
 }, {
