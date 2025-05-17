@@ -6,7 +6,9 @@ import {
     updateappAdminProfile,
     appAdminchangePassword,
     getAllUsers,
-    getUserById
+    getUserById,
+    getAttendanceByDate,
+    getAttendanceByDateRange
 } from '../Controller/admin.Controller.js';
 import { AppAdminprotect } from '../Middleware/authMiddleware.js';
 
@@ -19,5 +21,7 @@ router.put('/updateprofile', AppAdminprotect, updateappAdminProfile);
 router.put('/changepassword', AppAdminprotect, appAdminchangePassword);
 router.get('/getallusers', AppAdminprotect, getAllUsers);
 router.get('/getuser/:id', AppAdminprotect, getUserById);
+router.post("/bydate", AppAdminprotect, getAttendanceByDate); 
+router.post("/byrange", AppAdminprotect, getAttendanceByDateRange); 
 
 export default router;

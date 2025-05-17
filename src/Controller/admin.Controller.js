@@ -2,6 +2,7 @@ import AppAdmin from "../Model/adminModel.js";
 import jwt from "jsonwebtoken";
 import User from "../Model/profileModel.js";
 import mongoose from "mongoose";
+import Attendance from "../Model/attendanceModel.js";
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_ADMIN_SECRET, {
@@ -223,6 +224,52 @@ const getUserById = async (req, res) => {
   }
 };
 
+const getAttendanceByDate = async (req, res) => {
+  try {
+    const { date } = req.body;
+    if (!date) return res.status(400).json({ error: "Date is required." });
+
+    const targetDate = new Date(date);
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(targetDate.getDate() + 1);
+
+    const records = await Attendance.find({
+      date: { $gte: targetDate, $lt: nextDate }
+    }).populate("user", "-password -__v -otp");
+
+    res.status(200).json(records);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
+const getAttendanceByDateRange = async (req, res) => {
+  try {
+    const { start_date, end_date } = req.body;
+
+    if (!start_date || !end_date) {
+      return res.status(400).json({ error: "Both start_date and end_date are required." });
+    }
+
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+
+    if (startDate > endDate) {
+      return res.status(400).json({ error: "start_date cannot be after end_date." });
+    }
+
+    endDate.setDate(endDate.getDate() + 1);
+
+    const records = await Attendance.find({
+      date: { $gte: startDate, $lt: endDate }
+    }).populate("user", "-password -__v -otp");
+
+    res.status(200).json(records);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export {
   // appAdminSignUp,
   appAdminSignIn,
@@ -231,4 +278,6 @@ export {
   appAdminchangePassword,
   getAllUsers,
   getUserById,
+  getAttendanceByDate,
+  getAttendanceByDateRange
 };

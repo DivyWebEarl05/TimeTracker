@@ -18,7 +18,7 @@ const sendOtp = async (req, res) => {
       await user.save();
     }
 
-    console.log(`Sending OTP ${otp} to ${mobile_number}`);
+    // console.log(`Sending OTP ${otp} to ${mobile_number}`);
 
     res.status(200).json({ message: "OTP sent successfully", otp }); // Send OTP in response
   } catch (error) {
@@ -119,10 +119,11 @@ const login = async (req, res) => {
       user.otp = otp;
       await user.save();
 
-      console.log(`Resending OTP ${otp} to ${mobile_number}`);
+      // console.log(`Resending OTP ${otp} to ${mobile_number}`);
 
       res.status(200).json({
         message: "OTP resent. Please verify to log in.",
+        otp 
       });
     } else {
       res.status(200).json({
