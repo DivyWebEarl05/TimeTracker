@@ -7,8 +7,12 @@ import {
     appAdminchangePassword,
     getAllUsers,
     getUserById,
-    getAttendanceByDate,
-    getAttendanceByDateRange
+    // getAttendanceByDate,
+    // getAttendanceByDateRange,
+    getAttendanceByUserId,
+    // getUsersAttendanceByCity,
+    // getUsersAttendanceByState,
+    getFilteredAttendance
 } from '../Controller/admin.Controller.js';
 import { AppAdminprotect } from '../Middleware/authMiddleware.js';
 
@@ -21,7 +25,10 @@ router.put('/updateprofile', AppAdminprotect, updateappAdminProfile);
 router.put('/changepassword', AppAdminprotect, appAdminchangePassword);
 router.get('/getallusers', AppAdminprotect, getAllUsers);
 router.get('/getuser/:id', AppAdminprotect, getUserById);
-router.post("/bydate", AppAdminprotect, getAttendanceByDate); 
-router.post("/byrange", AppAdminprotect, getAttendanceByDateRange); 
+router.post("/filter", AppAdminprotect, getFilteredAttendance); 
+// router.post("/byrange", AppAdminprotect, getAttendanceByDateRange);
+router.get("/byuserid/:id", AppAdminprotect, getAttendanceByUserId);
+// router.get("/byCity/:city", AppAdminprotect, getUsersAttendanceByCity);
+// router.get("/byState/:state", AppAdminprotect, getUsersAttendanceByState);
 
 export default router;

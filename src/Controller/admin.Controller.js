@@ -171,7 +171,7 @@ const getAllUsers = async (req, res) => {
       },
       {
         $lookup: {
-          from: "attendances", 
+          from: "attendances",
           localField: "_id",
           foreignField: "user",
           as: "attendance",
@@ -207,7 +207,7 @@ const getUserById = async (req, res) => {
       },
       {
         $lookup: {
-          from: "attendances", 
+          from: "attendances",
           localField: "_id",
           foreignField: "user",
           as: "attendance",
@@ -224,47 +224,90 @@ const getUserById = async (req, res) => {
   }
 };
 
-const getAttendanceByDate = async (req, res) => {
+const getAttendanceByUserId = async (req, res) => {
   try {
-    const { date } = req.body;
-    if (!date) return res.status(400).json({ error: "Date is required." });
+    const { id } = req.params;
 
-    const targetDate = new Date(date);
-    const nextDate = new Date(targetDate);
-    nextDate.setDate(targetDate.getDate() + 1);
+    if (!id) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
 
-    const records = await Attendance.find({
-      date: { $gte: targetDate, $lt: nextDate }
-    }).populate("user", "-password -__v -otp");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid User ID." });
+    }
 
-    res.status(200).json(records);
+    const user = await User.findById(id).select("-password -__v -otp");
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const attendanceRecords = await Attendance.find({ user: id }).populate();
+
+    if (attendanceRecords.length === 0) {
+      return res.status(200).json({
+        user,
+        attendance: [],
+      });
+    }
+
+    res.status(200).json({
+      user,
+      attendance: attendanceRecords,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}
+};
 
-const getAttendanceByDateRange = async (req, res) => {
+const getFilteredAttendance = async (req, res) => {
   try {
-    const { start_date, end_date } = req.body;
+    const { date, start_date, end_date, city, state, userId } = req.body;
 
-    if (!start_date || !end_date) {
-      return res.status(400).json({ error: "Both start_date and end_date are required." });
+    let userFilter = {};
+    if (city) userFilter.city = city;
+    if (state) userFilter.state = state;
+    if (userId) userFilter._id = userId;
+
+    let users = [];
+    if (Object.keys(userFilter).length > 0) {
+      users = await User.find(userFilter).select("-password -__v -otp");
+      if (users.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No users found with given filters." });
+      }
     }
 
-    const startDate = new Date(start_date);
-    const endDate = new Date(end_date);
-
-    if (startDate > endDate) {
-      return res.status(400).json({ error: "start_date cannot be after end_date." });
+    let attendanceFilter = {};
+    if (date) {
+      const targetDate = new Date(date);
+      const nextDate = new Date(targetDate);
+      nextDate.setDate(targetDate.getDate() + 1);
+      attendanceFilter.date = { $gte: targetDate, $lt: nextDate };
+    } else if (start_date && end_date) {
+      const startDate = new Date(start_date);
+      const endDate = new Date(end_date);
+      if (startDate > endDate) {
+        return res
+          .status(400)
+          .json({ error: "start_date cannot be after end_date." });
+      }
+      endDate.setDate(endDate.getDate() + 1);
+      attendanceFilter.date = { $gte: startDate, $lt: endDate };
     }
 
-    endDate.setDate(endDate.getDate() + 1);
+    if (users.length > 0) {
+      attendanceFilter.user = { $in: users.map((u) => u._id) };
+    } else if (userId) {
+      attendanceFilter.user = userId;
+    }
 
-    const records = await Attendance.find({
-      date: { $gte: startDate, $lt: endDate }
-    }).populate("user", "-password -__v -otp");
+    const attendanceRecords = await Attendance.find(attendanceFilter).populate(
+      "user",
+      "-password -__v -otp"
+    );
 
-    res.status(200).json(records);
+    res.status(200).json(attendanceRecords);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -278,6 +321,10 @@ export {
   appAdminchangePassword,
   getAllUsers,
   getUserById,
-  getAttendanceByDate,
-  getAttendanceByDateRange
+  // getAttendanceByDate,
+  // getAttendanceByDateRange,
+  getAttendanceByUserId,
+  getFilteredAttendance
+  // getUsersAttendanceByCity,
+  // getUsersAttendanceByState,
 };
